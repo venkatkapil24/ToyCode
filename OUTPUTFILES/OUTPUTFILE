@@ -50,7 +50,7 @@ MIN AND MAX METADYNAMICS TIME          :            0.101E+03   0.336E+04
 ITERATION                              :                  0
 TIME                                   :            0.000E+00
 POSITION                               :            0.000E+00   0.000E+00
-VELOCITY                               :           -0.131E-03   0.611E-04
+VELOCITY                               :            0.955E-04  -0.108E-03
 ACCLERATION                            :            0.744E-06   0.770E-06
 KINETIC ENERGY                         :            0.950E-03
 POTENTIAL ENERGY                       :           -0.505E-01
@@ -59,13 +59,13 @@ INST. TEMPERATURE                      :            0.300E+03
 
 ITERATION                              :                  1
 TIME                                   :            0.700E+01
-POSITION                               :           -0.898E-03   0.447E-03
-VELOCITY                               :           -0.125E-03   0.663E-04
-ACCLERATION                            :            0.826E-06   0.730E-06
-KINETIC ENERGY                         :            0.916E-03
+POSITION                               :            0.687E-03  -0.740E-03
+VELOCITY                               :            0.100E-03  -0.103E-03
+ACCLERATION                            :            0.680E-06   0.834E-06
+KINETIC ENERGY                         :            0.941E-03
 POTENTIAL ENERGY                       :           -0.505E-01
 TOTAL ENERGY                           :           -0.496E-01
-INST. TEMPERATURE                      :            0.289E+03
+INST. TEMPERATURE                      :            0.297E+03
 
  *************************************************
  *                 TOYCODE-1.0                   *

@@ -1,0 +1,2 @@
+env GIT_SSL_NO_VERIFY=true git push -u origin master
+https://github.com/venkatkapil24/ToyCode.git
