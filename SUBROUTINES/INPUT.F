@@ -73,8 +73,8 @@
 		ALLOCATE( META_CV(META_DIM) )
 	!READS THE REST OF THE VARIABLES
 		READ(1,*) DUMMY, META_CV, DUMMY, WIDTH,
-     &          DUMMY, HEIGHT, DUMMY, META_N, DUMMY, META_TMIN, 
-     &		DUMMY, META_TMAX, DUMMY, NBINS, DUMMY, GRID_MIN, 
+     &          DUMMY, HEIGHT, DUMMY, META_N, DUMMY, META_IMIN, 
+     &		DUMMY, META_IMAX, DUMMY, NBINS, DUMMY, GRID_MIN, 
      &		GRID_MAX, DUMMY, RESTART_META  
        
 	!READS WELL TEMPERED METADYNAMICS PARAMETER.
@@ -277,27 +277,19 @@
                 	ERROR_STAT = .TRUE.
         	ENDIF
 	!CHECKS TMIN.
-        	IF(META_TMIN .LE. 0.0D0 ) THEN
+        	IF(META_IMIN .LE. 0 ) THEN
                 	CALL PRINT_COMMENT( ERRORFILE,
-     &          	'T_MIN IS NEGATIVE !')
-                	ERROR_STAT = .TRUE.
-        	ELSE IF( META_TMIN .GT. 5.0D0*673.0D0 ) THEN
-                	CALL PRINT_COMMENT( ERRORFILE,
-     &          	'T_MIN IS TOO HIGH!')
+     &          	'I_MIN IS NEGATIVE !')
                 	ERROR_STAT = .TRUE.
 		ENDIF
 	!CHECKS TMAX.
-        	IF(META_TMAX .LE. 0.0D0 ) THEN
+        	IF(META_IMAX .LE. 0 ) THEN
                 	CALL PRINT_COMMENT( ERRORFILE,
-     &          	'T_MIN IS NEGATIVE !')
+     &          	'I_MAX IS NEGATIVE !')
                 	ERROR_STAT = .TRUE.
-        	ELSE IF( META_TMAX .LE. META_TMIN ) THEN
+        	ELSE IF( META_IMAX .LT. META_IMIN ) THEN
                 	CALL PRINT_COMMENT (ERRORFILE,
      &          	'TMIN IS LESS THAN OR EQUAL TO TMAX!')
-                	ERROR_STAT = .TRUE.
-		ELSE IF( META_TMAX .GT. 10.0D0*673.0D0 ) THEN
-                	CALL PRINT_COMMENT( ERRORFILE,
-     &         		'T_MAX IS TO) HIGH!')
                 	ERROR_STAT = .TRUE.
         	ENDIF
 	ENDIF
