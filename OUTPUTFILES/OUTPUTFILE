@@ -1,0 +1,83 @@
+ *************************************************
+ *                 TOYCODE-1.0                   *
+ *                                               *
+ *      A MD PLATFORM FOR TESTING ENHANCED       *
+ *      SAMPLING ALGORITHMS.                     *
+ *                                               *
+ *      DEVELOPED BY VENKAT KAPIL                *
+ *      CONTACT : venkat@iitk.ac.in              *
+ *                                               *
+ *      COPYRIGHT (C) 2014 VENKAT KAPIL          *
+ *      SOME RIGHTS RESERVED.                    *
+ *                                               *
+ !************************************************
+
+ MOLECULAR DYNAMICS PARAMETERS:
+TEMPERATURE                            :            0.950E-03
+MASS                                   :            0.911E+05
+NUMBER OF DIMENSIONS                   :                  2
+NUMBER OF WELLS                        :                  3
+ENERGY BARRIER                         :            0.143E-01
+TIMESTEP                               :            0.700E+01
+MD STEPS                               :                  1
+THERMOSTAT                             :                  T
+
+ METADYNAMICS PARAMETERS:
+NUMBER OF DIMENSIONS                   :                  2
+CV COMPONENTS                          :                  1         2
+WIDTH OF GAUSSIAN                      :            0.500E-02
+INITIAL HEIGHT OF GAUSSIAN             :            0.100E-02
+METADYNAMICS STEPS                     :            4000000
+MIN AND MAX METADYNAMICS TIME          :            0.101E+03   0.336E+04
+
+ FORCEFIELD PARAMETERS:
+ MINIMUM POTENTIAL:  2.850175760838585E-002
+ COEFFICIENT:   139.298470287374     
+ LOCATION OF WELL:   0.00000000000000        0.00000000000000     
+
+ MINIMUM POTENTIAL:  2.850175760838585E-002
+ COEFFICIENT:   139.298470287374     
+ LOCATION OF WELL:  0.216056336002155        0.00000000000000     
+
+ MINIMUM POTENTIAL:  2.850175760838585E-002
+ COEFFICIENT:   139.298470287374     
+ LOCATION OF WELL:   0.00000000000000       0.179580942806497     
+
+ MINIMUM POTENTIAL:  2.850175760838585E-002
+ COEFFICIENT:   13.9298470287374     
+ LOCATION OF WELL:  0.108028168001078       8.979047140324870E-002
+
+ITERATION                              :                  0
+TIME                                   :            0.000E+00
+POSITION                               :            0.000E+00   0.000E+00
+VELOCITY                               :           -0.131E-03   0.611E-04
+ACCLERATION                            :            0.744E-06   0.770E-06
+KINETIC ENERGY                         :            0.950E-03
+POTENTIAL ENERGY                       :           -0.505E-01
+TOTAL ENERGY                           :           -0.496E-01
+INST. TEMPERATURE                      :            0.300E+03
+
+ITERATION                              :                  1
+TIME                                   :            0.700E+01
+POSITION                               :           -0.898E-03   0.447E-03
+VELOCITY                               :           -0.125E-03   0.663E-04
+ACCLERATION                            :            0.826E-06   0.730E-06
+KINETIC ENERGY                         :            0.916E-03
+POTENTIAL ENERGY                       :           -0.505E-01
+TOTAL ENERGY                           :           -0.496E-01
+INST. TEMPERATURE                      :            0.289E+03
+
+ *************************************************
+ *                 TOYCODE-1.0                   *
+ *                                               *
+ *      A MD PLATFORM FOR TESTING ENHANCED       *
+ *      SAMPLING ALGORITHMS.                     *
+ *                                               *
+ *      DEVELOPED BY VENKAT KAPIL                *
+ *      CONTACT : venkat@iitk.ac.in              *
+ *                                               *
+ *      COPYRIGHT (C) 2014 VENKAT KAPIL          *
+ *      SOME RIGHTS RESERVED.                    *
+ *                                               *
+ !************************************************
+

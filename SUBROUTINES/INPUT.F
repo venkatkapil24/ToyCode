@@ -1,0 +1,305 @@
+        !********************************************************
+        !*                      TOYCODE-1.0                     *
+        !*                                                      *
+        !*      A MD PLATFORM FOR TESTING ENHANCED              *
+        !*      SAMPLING ALGORITHMS.                            *
+        !*                                                      *
+        !*      DEVELOPED BY VENKAT KAPIL                       *
+        !*      CONTACT : venkat@iitk.ac.in                     *
+        !*                                                      *
+        !*      COPYRIGHT (C) 2014 VENKAT KAPIL                 *
+        !*      SOME RIGHTS RESERVED.                           *
+        !*                                                      *                                                       
+        !********************************************************
+
+	!THIS FILE CONTAINS SUBROUTINES THAT INPUT AND CHECK VALES. 
+	!THEY ARE AS FOLLOWS:
+	!	*) INPUT 
+	!	*) CHECK_ERROR
+
+	!SUBROUTINE *) INPUT
+	SUBROUTINE INPUT
+	USE PARAM
+	USE UMBRSAMP
+	USE METADYN
+	IMPLICIT NONE
+	INTEGER ITER, DUMMY_SIZE, IOSTATUS
+	REAL*8, DIMENSION(:), ALLOCATABLE ::  DUMMY_VAR
+	CHARACTER (LEN=50)	 DUMMY
+	CHARACTER (LEN =100) 	 FILENAME
+	!OPENS MOLECULAR DYNAMICS INPUT FILE.
+	OPEN( UNIT =1, FILE = INPUTFILE1, STATUS = 'OLD' )
+	READ(1,*) DUMMY, TEMP, DUMMY, MASS, DUMMY, NDIM, DUMMY, NWELL,
+     &	DUMMY, BARRIER, DUMMY, DT, DUMMY, N, DUMMY, THERMSTAT, DUMMY, 
+     &	RESTART_MD
+	CLOSE(1)
+	!OPENS UMBRELLA SAMPLING INPUT FILE.
+	OPEN( UNIT =1, FILE = INPUTFILE2, STATUS = 'OLD' )
+        READ(1,*) DUMMY, UMBR
+	!INPUTS THE REST IF UMRELLA SAMPLING IS SELECTED.
+	IF( UMBR .EQV. .TRUE.) THEN 
+		READ(1,*) DUMMY, UMBR_DIM
+		DUMMY_SIZE =2*UMBR_DIM
+	!DYNAMICALLY INCLUDES DIMENSIONALITY.
+		ALLOCATE ( UMBR_K(UMBR_DIM) )
+		ALLOCATE ( UMBR_COMP(UMBR_DIM) )
+		ALLOCATE ( DUMMY_VAR(DUMMY_SIZE) )
+		ALLOCATE( UMBR_N(UMBR_DIM) )
+	!READS REST OF THE VARIABLES. 
+		READ(1,*) DUMMY, (UMBR_K(ITER), ITER=1,UMBR_DIM)
+		READ(1,*) DUMMY, (UMBR_COMP(ITER), ITER=1,UMBR_DIM)
+		READ(1,*) DUMMY, (DUMMY_VAR(ITER), ITER=1,DUMMY_SIZE)
+		READ(1,*) DUMMY, (UMBR_N(ITER), ITER=1,UMBR_DIM)
+		READ(1,*) DUMMY, RESTART_MD       
+	!CASTS UMBR_SIZE INTO A 2D ARRAY.	
+		DUMMY_SIZE = 2
+        	ALLOCATE ( UMBR_RANGE(UMBR_DIM,DUMMY_SIZE) )
+        	UMBR_RANGE = RESHAPE( DUMMY_VAR, (/UMBR_DIM,2/), 
+     &		ORDER = (/2, 1/) )
+	ENDIF 
+        CLOSE(1)
+	!OPENS METADYNAMICS INPUT FILE.
+	OPEN( UNIT =1, FILE = INPUTFILE3, STATUS = 'OLD' )
+        READ(1,*) DUMMY, META  
+        !INPUTS THE REST IF METADYNAMICS IS SELECTED.
+        IF( META .EQV. .TRUE.) THEN
+                READ(1,*) DUMMY, META_DIM
+	!DYNAMICALLY INCLUDES DIMENSIONALITY.
+		ALLOCATE( META_CV(META_DIM) )
+	!READS THE REST OF THE VARIABLES
+		READ(1,*) DUMMY, META_CV, DUMMY, WIDTH,
+     &          DUMMY, HEIGHT, DUMMY, META_N, DUMMY, META_TMIN, 
+     &		DUMMY, META_TMAX, DUMMY, NBINS, DUMMY, GRID_MIN, 
+     &		GRID_MAX, DUMMY, RESTART_META  
+       
+	!READS WELL TEMPERED METADYNAMICS PARAMETER.
+		READ(1,*, IOSTAT = IOSTATUS) DUMMY
+		IF( IOSTATUS .EQ. 0) THEN
+			READ(1,*) DELTA_T
+			WELL_TEMP = .TRUE.
+		ELSE
+			WELL_TEMP = .FALSE.
+		ENDIF
+        ENDIF
+        CLOSE(1)
+	RETURN
+	END SUBROUTINE
+
+	!SUBROUTINE *) CHECK_ERROR 
+	!THIS SUBROUTINE CHECKS IF THE INPUT DATA MAKES SENSE.
+	SUBROUTINE CHECK_INPUT
+	USE PARAM 
+        USE UMBRSAMP
+        USE METADYN
+	USE CONSTANTS
+	IMPLICIT NONE
+	INTEGER ITER, DUMMY 
+	LOGICAL DUMMY_CHECK
+	!SETS ERROR STATUS TO .FALSE.
+	ERROR_STAT = .FALSE.
+	!MOLECULAR DYNAMICS PARAMETERS.
+	!CHECKS TEMPERATURE.
+	IF(TEMP .LE. 0.0D0 ) THEN
+		CALL PRINT_COMMENT( ERRORFILE, 
+     &		'TEMP IS NEGATIVE !')
+		ERROR_STAT = .TRUE.
+	ENDIF
+	!CHECKS MASS.
+	IF(MASS .LE. 0.0D0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE, 
+     &		'MASS IS NEGATIVE !')
+                ERROR_STAT = .TRUE.
+        ENDIF
+	!CHECKS DIMENSIONS.
+	IF(NDIM .LE. 0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE, 
+     &		'DIMENSIONALITY IS NEGATIVE !')
+                ERROR_STAT = .TRUE.
+        ENDIF
+	!CHECKS NUMBER OF WELLS.
+	IF(NWELL .LE. 0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE, 
+     &          'NUMBER OF WELLS IS NEGATIVE !')
+                ERROR_STAT = .TRUE.
+        ELSE IF( NWELL .GT. 6 ) THEN 
+		CALL PRINT_COMMENT( ERRORFILE,
+     &          'NUMBER OF WELLS IS GREATER THAN 2 !')
+                ERROR_STAT = .TRUE.
+	ENDIF
+	!CHECKS BARRIER.
+	IF(BARRIER .LE. 0.0D0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE, 
+     &          'BARRIER IS NEGATIVE !')
+                ERROR_STAT = .TRUE.
+        ELSE IF ( BARRIER .GT. 50.0 * TEMP ) THEN
+		CALL PRINT_COMMENT( ERRORFILE,
+     &		'BARRIER IS TOO LARGE. ITS A TOYCODE MAN !')
+		ERROR_STAT= .TRUE.
+	ENDIF
+	!CHECKS TIMESTEP.
+	IF(DT .LE. 0.0D0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE, 
+     &          'TIMESTEP IS NEGATIVE !')
+                ERROR_STAT = .TRUE.
+        ELSE IF ( DT .GT. 70.0D0 ) THEN
+                CALL PRINT_COMMENT( ERRORFILE,
+     &          ' TIMESTEP TOO LARGE. FORCES WILL BE INCORRECT !')
+                ERROR_STAT= .TRUE.
+	ENDIF
+	!UMBRELLA SAMPLING.
+	IF( UMBR .EQV. .TRUE. ) THEN
+	!CHECKS DIMENSIONS.
+	        IF(UMBR_DIM .LE. 0 ) THEN
+	                CALL PRINT_COMMENT( ERRORFILE, 
+     &		          'DIMENSIONALITY OF RESTARINING IS NEGATIVE !')
+	                ERROR_STAT = .TRUE.
+		ELSE IF( UMBR_DIM .GT. NDIM) THEN
+			CALL PRINT_COMMENT( ERRORFILE,
+     &		'DIMENSIONALITY OF RESTRAINING CANNOT EXCEED THAT OF MD !')
+			ERROR_STAT=.TRUE.
+	 	ENDIF
+	!UMBRELLA FORCE CONSTANTS.
+		DO ITER= 1, UMBR_DIM
+        		IF(UMBR_K(ITER) .LE. 0.0D0 ) THEN
+        	        	CALL PRINT_COMMENT( ERRORFILE, 
+     &  	        	'UMBRELLA FORCE CONSTANT IS NEGATIVE !')
+                		ERROR_STAT = .TRUE.
+			ELSE IF(UMBR_K(ITER) .LT. 4.0 *
+     &                   PI * PI * MASS / ( 673.0D0 * 673.0D0 )) THEN
+				CALL PRINT_COMMENT( ERRORFILE,
+     &  	                'UMBRELLA FORCE CONSTANT IS WEAK !')
+        	                ERROR_STAT = .TRUE. 
+			ENDIF
+		ENDDO
+	!CHECKS COMPONENTS.
+        	DO ITER= 1, UMBR_DIM
+               		IF(UMBR_COMP(ITER) .LE. 0.0D0 ) THEN
+                	        CALL PRINT_COMMENT( ERRORFILE,
+     &          	        'RESTRAINED COMPONENT IS NEGATIVE !')
+                	        ERROR_STAT = .TRUE.
+               		ELSE IF(UMBR_COMP(ITER) .GT. NDIM) THEN
+                	        CALL PRINT_COMMENT( ERRORFILE,
+     &          	        'RESTRAINED COMPONENT IS INVALID !')
+                	        ERROR_STAT = .TRUE.
+                	ENDIF
+	!CHECKS IF COMPONENTS DISTINCT.
+			DO DUMMY =1, ITER-1
+				IF( UMBR_COMP(DUMMY) .EQ. UMBR_COMP(ITER) ) THEN
+					CALL PRINT_COMMENT( ERRORFILE,
+     &                 		 	'RESTRAINED COMPONENTS ARE INDISTINCT !')
+                        	ERROR_STAT = .TRUE.
+				ENDIF
+        		ENDDO
+		ENDDO
+	!CHECKS RANGE
+		DO ITER= 1, UMBR_DIM
+                	IF(UMBR_RANGE(ITER,1) .GT. UMBR_RANGE(ITER,2) ) THEN
+                        	CALL PRINT_COMMENT( ERRORFILE,
+     &                  	'RANGE DOESNT MAKE SENSE !')
+                        	ERROR_STAT = .TRUE.
+             	 	ENDIF
+       		ENDDO
+	!CHECKS NUMBER OF UMBRELLAS.
+		DO ITER=1, UMBR_DIM
+			IF(UMBR_N(ITER) .LE. 0 ) THEN
+                		CALL PRINT_COMMENT( ERRORFILE,
+     &          		'NUMBER OF UMBRELLAS IS NEGATIVE !')
+               		 	ERROR_STAT = .TRUE.
+        		ELSE IF( UMBR_N(ITER) .GT. 1000) THEN
+                		CALL PRINT_COMMENT( ERRORFILE,
+     &          		'NUMBER OF UMBRELLAS IS LARGE. ITS A TOYCODE MAN !')
+                		ERROR_STAT=.TRUE.
+			ELSE IF( (UMBR_N(ITER) .EQ. 1) .AND. ( DABS(UMBR_RANGE(ITER,1) 
+     &			-UMBR_RANGE(ITER,2)) .LT. UMBR_RANGE(ITER,1)/1000.0D0 ) ) THEN
+				CALL PRINT_COMMENT( ERRORFILE,
+     &				'ONE UMBRELLA CAN NOT BE PLACED AT TWO 
+     &				LOCATIONS SIMULTANEOUSLY !')
+        		ENDIF
+		ENDDO
+	ENDIF
+	!CHECKS METADYNAMICS PARAMETERS.
+	IF(META .EQV. .TRUE.) THEN
+	!CHECKS DIMENSIONS.
+        	IF(META_DIM .LE. 0 ) THEN
+        	        CALL PRINT_COMMENT( ERRORFILE,
+     &  	        'DIMENSIONALITY OF MTD IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+      		ELSE IF( UMBR_DIM .GT. NDIM) THEN
+        	        CALL PRINT_COMMENT( ERRORFILE,
+     &  	        'DIMENSIONALITY OF MTD CANNOT EXCEED THAT OF MD !')
+        	        ERROR_STAT=.TRUE.
+        	ENDIF
+	!CHECKS CVS.
+        	DO ITER= 1, META_DIM
+                	IF(META_CV(ITER) .LE. 0.0D0 ) THEN
+                        	CALL PRINT_COMMENT( ERRORFILE,
+     &                  	'CV COMPONENT IS NEGATIVE !')
+                        	ERROR_STAT = .TRUE.
+                	ELSE IF(META_CV(ITER) .GT. NDIM) THEN
+                        	CALL PRINT_COMMENT( ERRORFILE,
+     &                  	'CV COMPONENT IS INVALID !')
+                        	ERROR_STAT = .TRUE.
+                	ENDIF
+        !CHECKS IF COMPONENTS DISTINCT.
+                	DO DUMMY =1, ITER-1
+                        	IF( META_CV(DUMMY) .EQ. META_CV(ITER) ) THEN
+                        	        CALL PRINT_COMMENT( ERRORFILE,
+     &                  	        'CV COMPONENTS ARE INDISTINCT !')
+                        	ERROR_STAT = .TRUE.
+                        	ENDIF
+                	ENDDO
+        	ENDDO
+	!CHECKS WIDTH.
+	        IF(WIDTH .LE. 0.0D0 ) THEN
+        	        CALL PRINT_COMMENT( ERRORFILE,
+     &          	'WIDTH IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+       		 ENDIF
+	!CHECKS HEIGHT.
+       		IF(HEIGHT .LE. 0.0D0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &          	'HEIGHT IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+		ELSE IF( HEIGHT .GT. BARRIER * 0.75D0 ) THEN
+			CALL PRINT_COMMENT( ERRORFILE, 
+     &			'HILL HEIGHT IS NO LONGER A HILL. ITS A MOUNTAIN!')
+			ERROR_STAT = .TRUE.
+	        ENDIF
+	!CHECK STEPS
+        	IF(META_N .LE. 0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &          	'MTS STEPS IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+        	ENDIF
+	!CHECKS TMIN.
+        	IF(META_TMIN .LE. 0.0D0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &          	'T_MIN IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+        	ELSE IF( META_TMIN .GT. 5.0D0*673.0D0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &          	'T_MIN IS TOO HIGH!')
+                	ERROR_STAT = .TRUE.
+		ENDIF
+	!CHECKS TMAX.
+        	IF(META_TMAX .LE. 0.0D0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &          	'T_MIN IS NEGATIVE !')
+                	ERROR_STAT = .TRUE.
+        	ELSE IF( META_TMAX .LE. META_TMIN ) THEN
+                	CALL PRINT_COMMENT (ERRORFILE,
+     &          	'TMIN IS LESS THAN OR EQUAL TO TMAX!')
+                	ERROR_STAT = .TRUE.
+		ELSE IF( META_TMAX .GT. 10.0D0*673.0D0 ) THEN
+                	CALL PRINT_COMMENT( ERRORFILE,
+     &         		'T_MAX IS TO) HIGH!')
+                	ERROR_STAT = .TRUE.
+        	ENDIF
+	ENDIF
+	RETURN
+	END SUBROUTINE
+
+
+
+
+
